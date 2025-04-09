@@ -1,4 +1,4 @@
-const products = [];
+const Product = require("../models/product.js"); //since its a class make it capital
 
 exports.getAddProduct = (req, res, next) => {
   res.render("add-product", {
@@ -11,21 +11,32 @@ exports.getAddProduct = (req, res, next) => {
 };
 
 exports.postAddProduct = (req, res, next) => {
-  products.push({ title: req.body.title });
+  const product = new Product(req.body.title);
+  product.save();
+  //products.push({ title: req.body.title });
   res.redirect("/");
 };
 
 exports.getProducts = (req, res, next) => {
-  // console.log("shop.js", adminData.products);
-  // //console.log("in this middleware");
-  // res.sendFile(path.join(rootDir, "views", "shop.html")); //adding path to the other filea in this directory
-  res.render("shop", {
-    prods: products,
-    pageTitle: "shop",
-    path: "/",
-    hasProducts: products.length > 0,
-    activeShop: true,
-    productCSS: true,
+  Product.fetchAll((products) => {
+    res.render("shop", {
+      prods: products,
+      pageTitle: "shop",
+      path: "/",
+      hasProducts: products.length > 0,
+      activeShop: true,
+      productCSS: true,
+    });
+    // console.log("shop.js", adminData.products);
+    // //console.log("in this middleware");
+    // res.sendFile(path.join(rootDir, "views", "shop.html")); //adding path to the other filea in this directory
+    // res.render("shop", {
+    //   prods: products,
+    //   pageTitle: "shop",
+    //   path: "/",
+    //   hasProducts: products.length > 0,
+    //   activeShop: true,
+    //   productCSS: true,
     //layout: false,
   }); // it will directly look for default engines here 'pug'
 };
