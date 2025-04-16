@@ -34,6 +34,7 @@ module.exports = class Product {
     this.price = price;
   }
   save() {
+    this.id = Math.random().toString(); //Now all our products will have new id
     //products.push(this);
     getProductsFromFile((products) => {
       products.push(this);
@@ -74,5 +75,12 @@ module.exports = class Product {
     //     cb(JSON.parse(fileContent));
     //   });
     //   // return products;
+  }
+
+  static findById(id, cb) {
+    getProductsFromFile((products) => {
+      const product = products.find((p) => p.id === id);
+      cb(product);
+    });
   }
 };

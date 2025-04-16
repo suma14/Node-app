@@ -1,5 +1,5 @@
 const Product = require("../models/product.js"); //since its a class make it capital
-
+const Cart = require("../models/cart");
 // exports.getAddProduct = (req, res, next) => {
 //   res.render("admin/add-product", {
 //     pageTitle: "Add Product",
@@ -41,6 +41,20 @@ exports.getProducts = (req, res, next) => {
   }); // it will directly look for default engines here 'pug'
 };
 
+exports.getProduct = (req, res, next) => {
+  const prodId = req.params.productId; //dynamic route   // gives all the deayils that is gives the JSON file
+  //console.log(prodId);
+  Product.findById(prodId, (product) => {
+    //console.log(product);
+    res.render("shop/product-detail", {
+      product: product,
+      pageTitle: product.title,
+      path: "/products",
+    });
+  });
+  //res.redirect("/");
+};
+
 exports.getIndex = (req, res, next) => {
   Product.fetchAll((products) => {
     res.render("shop/index", {
@@ -59,6 +73,17 @@ exports.getCart = (req, res, next) => {
     path: "/cart",
     pageTitle: "Your cart",
   });
+};
+
+exports.postCart = (req, res, next) => {
+  const prodId = req.body.productId;
+  //console.log(prodId);
+  Product.findById(prodId, (product) => {
+    //console.log(product.price);
+    Cart.addProduct(prodId, product.price);
+  });
+  res.redirect("/cart");
+  //res.render("");
 };
 
 exports.getOrders = (req, res, next) => {
