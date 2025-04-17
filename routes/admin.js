@@ -30,6 +30,7 @@ router.post(
 );
 
 //module.exports = router;
+router.get("/edit-product/:productId", adminController.getEditProduct);
 
 module.exports = router;
 // exports.routes = router;
