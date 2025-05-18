@@ -5,6 +5,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 
 const errorController = require("./controllers/error.js");
+const db = require("./util/database");
 
 //const { create } = require("express-handlebars");
 
@@ -36,6 +37,15 @@ app.set("views", "views"); // Now we are telling express that we want to compile
 const adminRoutes = require("./routes/admin");
 
 const shopRoutes = require("./routes/shop");
+
+//testing code for database
+// db.execute("SELECT * FROM products")
+//   .then((result) => {
+//     console.log(result[0], result[1]);
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
 
 // app.use((req, res, next) => {
 //   console.log("in the middleware");
