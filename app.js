@@ -5,13 +5,16 @@ const express = require("express");
 const bodyParser = require("body-parser");
 
 const errorController = require("./controllers/error.js");
-const sequelize = require("./util/database");
-const Product = require("./models/product");
+const mongoConnect = require("./util/database.js").mongoConnect;
 const User = require("./models/user");
-const Cart = require("./models/cart");
-const CartItem = require("./models/cart-item");
-const Order = require("./models/order");
-const OrderItem = require("./models/order-item");
+
+// const sequelize = require("./util/database");
+// const Product = require("./models/product");
+// const User = require("./models/user");
+// const Cart = require("./models/cart");
+// const CartItem = require("./models/cart-item");
+// const Order = require("./models/order");
+// const OrderItem = require("./models/order-item");
 
 //const { create } = require("express-handlebars");
 
@@ -62,12 +65,13 @@ app.use(bodyParser.urlencoded({ extented: false }));
 app.use(express.static(path.join(__dirname, "public"))); //now users should be able to access the public path
 
 app.use((req, res, next) => {
-  User.findByPk(1)
+  User.findById("683f5c0122da92ad9fa89ad1")
     .then((user) => {
-      req.user = user;
+      req.user = new User(user.name, user.email, user.cart, user._id);
       next();
     })
     .catch((err) => console.log(err)); //for incoming requests only
+  // next();
 });
 
 //app.use("/admin", adminRoutes);
@@ -84,64 +88,68 @@ app.use(
   errorController.get404
 );
 
-Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" }); // Associations in sequelize
-User.hasMany(Product);
-User.hasOne(Cart);
-Cart.belongsTo(User);
-Cart.belongsToMany(Product, { through: CartItem });
-Product.belongsToMany(Cart, { through: CartItem });
-Order.belongsTo(User);
-User.hasMany(Order);
-Order.belongsToMany(Product, { through: OrderItem });
+mongoConnect(() => {
+  app.listen(3001);
+});
 
-sequelize
-  // .sync({ force: true })
-  .sync()
-  .then((result) => {
-    return User.findByPk(1);
-    //console.log(result);
-    //app.listen(3001);
-  })
-  .then((user) => {
-    if (!user) {
-      return User.create({ name: "suma", email: "suma@gmail.com" });
-    }
-    //return Promise.resolve(user);
-    return user;
-  })
-  .then((user) => {
-    //console.log(user);
-    return user.createCart();
-  })
-  .then((cart) => {
-    app.listen(3001);
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+// Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" }); // Associations in sequelize
+// User.hasMany(Product);
+// User.hasOne(Cart);
+// Cart.belongsTo(User);
+// Cart.belongsToMany(Product, { through: CartItem });
+// Product.belongsToMany(Cart, { through: CartItem });
+// Order.belongsTo(User);
+// User.hasMany(Order);
+// Order.belongsToMany(Product, { through: OrderItem });
 
-// app.use("/add-product", (req, res, next) => {
-//   // any routes that starts with slash for eg: /addproduct
-//   console.log("in another middleware");
-//   res.send(
-//     '<form action="/product" method="POST"><input type="text" name="title"><button type="submit">Add Product</button></form>'
-//   ); //sending response
-// });
+// sequelize
+//   // .sync({ force: true })
+//   .sync()
+//   .then((result) => {
+//     return User.findByPk(1);
+//     //console.log(result);
+//     //app.listen(3001);
+//   })
+//   .then((user) => {
+//     if (!user) {
+//       return User.create({ name: "suma", email: "suma@gmail.com" });
+//     }
+//     //return Promise.resolve(user);
+//     return user;
+//   })
+//   .then((user) => {
+//     //console.log(user);
+//     return user.createCart();
+//   })
+//   .then((cart) => {
+//     app.listen(3001);
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
 
-// app.post("/product", (req, res, next) => {
-//   console.log(req.body);
-//   res.redirect("/");
-// });
+// // app.use("/add-product", (req, res, next) => {
+// //   // any routes that starts with slash for eg: /addproduct
+// //   console.log("in another middleware");
+// //   res.send(
+// //     '<form action="/product" method="POST"><input type="text" name="title"><button type="submit">Add Product</button></form>'
+// //   ); //sending response
+// // });
 
-// app.use("/", (req, res, next) => {
-//   console.log("in this middleware");
-//   res.send("<h1>Hello from express</h1>"); //sending response
-// });
+// // app.post("/product", (req, res, next) => {
+// //   console.log(req.body);
+// //   res.redirect("/");
+// // });
 
-//console.log(routes.someText);
+// // app.use("/", (req, res, next) => {
+// //   console.log("in this middleware");
+// //   res.send("<h1>Hello from express</h1>"); //sending response
+// // });
 
-// const server = http.createServer(routes.handler); // ananomous function
+// //console.log(routes.someText);
 
-// app.listen(3001); // it calls http create server and passes itself
-// const server = http.createServer(app);
-// server.listen(3001);
+// // const server = http.createServer(routes.handler); // ananomous function
+
+// // app.listen(3001); // it calls http create server and passes itself
+// // const server = http.createServer(app);
+// // server.listen(3001);

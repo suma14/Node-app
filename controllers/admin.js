@@ -1,4 +1,7 @@
+// const mongodb = require("mongodb");
 const Product = require("../models/product");
+
+// const ObjectId = mongodb.ObjectId;
 
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
@@ -13,21 +16,31 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  // const product = new Product(null, title, imageUrl, description, price);
-  // product
-  //   .save()
-  //   .then(() => {
-  //     res.redirect("/");
-  //   })
-  //   .catch((err) => console.log(err));
-  //Now using Sequelize
-  req.user
-    .createProduct({
-      title: title,
-      price: price,
-      imageUrl: imageUrl,
-      description: description,
-    }) // This createProduct object is already created when the Product model is created.
+  const product = new Product(
+    title,
+    price,
+    description,
+    imageUrl,
+    null,
+    req.user._id
+  );
+  product
+    .save()
+    // const product = new Product(null, title, imageUrl, description, price);
+    // product
+    //   .save()
+    //   .then(() => {
+    //     res.redirect("/");
+    //   })
+    //   .catch((err) => console.log(err));
+    //Now using Sequelize
+    // req.user
+    //   .createProduct({
+    //     title: title,
+    //     price: price,
+    //     imageUrl: imageUrl,
+    //     description: description,
+    //   }) // This createProduct object is already created when the Product model is created.
     //     Product.create(//{
     // //   title: title,
     // //   price: price,
@@ -52,11 +65,12 @@ exports.getEditProduct = (req, res, next) => {
     return res.redirect("/");
   }
   const prodId = req.params.productId;
-  req.user
-    .getProducts({ where: { id: prodId } })
-    //Product.findByPk(prodId)
-    .then((products) => {
-      const product = products[0];
+  // req.user
+  //   .getProducts({ where: { id: prodId } })
+  //Product.findByPk(prodId)
+  Product.findById(prodId)
+    .then((product) => {
+      //const product = products[0];
       if (!product) {
         return res.rediect("/");
       }
@@ -97,14 +111,23 @@ exports.postEditProduct = (req, res, next) => {
   // updatedProduct.save();
   // res.redirect("/admin/products");
   //In sequelize we save like this
-  Product.findByPk(prodId)
-    .then((product) => {
-      product.title = updatedTitle;
-      product.price = updatedPrice;
-      product.description = updatedDesc;
-      product.imageUrl = updatedImageUrl;
-      return product.save();
-    })
+  // Product.findById(prodId)
+  //   .then((productData) => {
+  // product.title = updatedTitle;
+  // product.price = updatedPrice;
+  // product.description = updatedDesc;
+  // product.imageUrl = updatedImageUrl;
+  //   return product.save();
+  // })
+  const product = new Product(
+    updatedTitle,
+    updatedPrice,
+    updatedDesc,
+    updatedImageUrl,
+    prodId // no need to add ObjectId here  as we changed in the models
+  );
+  product
+    .save()
     .then((result) => {
       console.log("Updated Product");
       res.redirect("/admin/products");
@@ -120,9 +143,10 @@ exports.getProducts = (req, res, next) => {
   //     path: "/admin/products",
   //   });
   // });
-  req.user
-    .getProducts()
-    //Product.findAll()
+  // req.user
+  //   .getProducts()
+  //Product.findAll()
+  Product.fetchAll()
     .then((products) => {
       res.render("admin/products", {
         prods: products,
@@ -135,11 +159,12 @@ exports.getProducts = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
-  Product.findByPk(prodId)
-    .then((product) => {
-      return product.destroy();
-    })
-    .then((result) => {
+  // Product.findByPk(prodId)
+  //   .then((product) => {
+  //     return product.destroy();
+  //   })
+  Product.deleteById(prodId)
+    .then(() => {
       console.log("Destroyed Product");
       res.redirect("/admin/products");
     })
