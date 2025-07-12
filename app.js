@@ -1,11 +1,12 @@
-const http = require("http");
+//const http = require("http");
 const path = require("path");
 const express = require("express");
 //const routes = require("./routes");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 
 const errorController = require("./controllers/error.js");
-const mongoConnect = require("./util/database.js").mongoConnect;
+// const mongoConnect = require("./util/database.js").mongoConnect;
 const User = require("./models/user");
 
 // const sequelize = require("./util/database");
@@ -65,9 +66,10 @@ app.use(bodyParser.urlencoded({ extented: false }));
 app.use(express.static(path.join(__dirname, "public"))); //now users should be able to access the public path
 
 app.use((req, res, next) => {
-  User.findById("683f5c0122da92ad9fa89ad1")
+  User.findById("686ea704af0cdc13c692f81e")
     .then((user) => {
-      req.user = new User(user.name, user.email, user.cart, user._id);
+      // req.user = new User(user.name, user.email, user.cart, user._id);
+      req.user = user; // mongoose
       next();
     })
     .catch((err) => console.log(err)); //for incoming requests only
@@ -88,9 +90,32 @@ app.use(
   errorController.get404
 );
 
-mongoConnect(() => {
-  app.listen(3001);
-});
+mongoose
+  .connect(
+    "mongodb+srv://Suma:Suma1414@cluster0.2dfnrmp.mongodb.net/shop?retryWrites=true&w=majority"
+  ) //mongodb+srv://Suma:Suma1414@cluster0.2dfnrmp.mongodb.net/shop
+  .then((result) => {
+    User.findOne().then((user) => {
+      if (!user) {
+        const user = new User({
+          name: "Suma",
+          email: "suma@gmail.com",
+          cart: {
+            items: [],
+          },
+        });
+        user.save();
+      }
+    });
+    app.listen(3001);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+
+// mongoConnect(() => {
+//   app.listen(3001);
+// });
 
 // Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" }); // Associations in sequelize
 // User.hasMany(Product);

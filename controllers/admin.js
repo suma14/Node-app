@@ -17,15 +17,22 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
   const product = new Product(
-    title,
-    price,
-    description,
-    imageUrl,
-    null,
-    req.user._id
+    {
+      title: title,
+      price: price,
+      description: description,
+      imageUrl: imageUrl,
+      userId: req.user,
+    }
+    // title,
+    // price,
+    // description,
+    // imageUrl,
+    // null,
+    // req.user._id
   );
   product
-    .save()
+    .save() // now coming from mongoose as we are not defining it.
     // const product = new Product(null, title, imageUrl, description, price);
     // product
     //   .save()
@@ -119,15 +126,21 @@ exports.postEditProduct = (req, res, next) => {
   // product.imageUrl = updatedImageUrl;
   //   return product.save();
   // })
-  const product = new Product(
-    updatedTitle,
-    updatedPrice,
-    updatedDesc,
-    updatedImageUrl,
-    prodId // no need to add ObjectId here  as we changed in the models
-  );
-  product
-    .save()
+  // const product = new Product(
+  //   updatedTitle,
+  //   updatedPrice,
+  //   updatedDesc,
+  //   updatedImageUrl,
+  //   prodId // no need to add ObjectId here  as we changed in the models
+  // );
+  Product.findById(prodId)
+    .then((product) => {
+      product.title = updatedTitle;
+      product.price = updatedPrice;
+      product.description = updatedDesc;
+      product.imageUrl = updatedImageUrl;
+      return product.save();
+    })
     .then((result) => {
       console.log("Updated Product");
       res.redirect("/admin/products");
@@ -146,8 +159,11 @@ exports.getProducts = (req, res, next) => {
   // req.user
   //   .getProducts()
   //Product.findAll()
-  Product.fetchAll()
+  Product.find()
+    // .select("title price -_id") //excluding id
+    // .populate("userId", "name") // expect name exclude all the details
     .then((products) => {
+      console.log(products);
       res.render("admin/products", {
         prods: products,
         pageTitle: "Admin Products",
@@ -163,7 +179,7 @@ exports.postDeleteProduct = (req, res, next) => {
   //   .then((product) => {
   //     return product.destroy();
   //   })
-  Product.deleteById(prodId)
+  Product.findByIdAndDelete(prodId)
     .then(() => {
       console.log("Destroyed Product");
       res.redirect("/admin/products");
