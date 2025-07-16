@@ -4,6 +4,8 @@ const express = require("express");
 //const routes = require("./routes");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const session = require("express-session");
+const MongoDBStore = require("connect-mongodb-session")(session);
 
 const errorController = require("./controllers/error.js");
 // const mongoConnect = require("./util/database.js").mongoConnect;
@@ -19,8 +21,14 @@ const User = require("./models/user");
 
 //const { create } = require("express-handlebars");
 
-const app = express();
+const MONGODB_URI =
+  "mongodb+srv://Suma:Suma1414@cluster0.2dfnrmp.mongodb.net/shop";
 
+const app = express();
+const store = new MongoDBStore({
+  uri: MONGODB_URI,
+  collection: "sessions",
+});
 // const hbs = create({
 //   layoutsDir: "views/layouts/",
 //   defaultLayout: "main-layout",
@@ -45,8 +53,8 @@ app.set("view engine", "ejs");
 app.set("views", "views"); // Now we are telling express that we want to compile dynamic templates with the pug engine/ handlebars engine and where to find these templates.
 //const adminRoutes = require("./routes/admin");
 const adminRoutes = require("./routes/admin");
-
 const shopRoutes = require("./routes/shop");
+const authRoutes = require("./routes/auth");
 
 //testing code for database
 // db.execute("SELECT * FROM products")
@@ -64,9 +72,20 @@ const shopRoutes = require("./routes/shop");
 
 app.use(bodyParser.urlencoded({ extented: false }));
 app.use(express.static(path.join(__dirname, "public"))); //now users should be able to access the public path
+app.use(
+  session({
+    secret: "my secret",
+    resave: false,
+    saveUninitialized: false,
+    store: store,
+  })
+);
 
 app.use((req, res, next) => {
-  User.findById("686ea704af0cdc13c692f81e")
+  if (!req.session.user) {
+    return next();
+  }
+  User.findById(req.session.user._id) //686ea704af0cdc13c692f81e
     .then((user) => {
       // req.user = new User(user.name, user.email, user.cart, user._id);
       req.user = user; // mongoose
@@ -81,6 +100,7 @@ app.use((req, res, next) => {
 //app.use(adminRoutes);
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
+app.use(authRoutes);
 
 app.use(
   //(req, res, next) => {
@@ -93,7 +113,7 @@ app.use(
 mongoose
   .connect(
     "mongodb+srv://Suma:Suma1414@cluster0.2dfnrmp.mongodb.net/shop?retryWrites=true&w=majority"
-  ) //mongodb+srv://Suma:Suma1414@cluster0.2dfnrmp.mongodb.net/shop
+  ) //mongodb+srv://Suma:Suma1414@cluster0.2dfnrmp.mongodb.net/shop    //mongodb+srv://Suma:Suma1414@cluster0.2dfnrmp.mongodb.net/shop?retryWrites=true&w=majority
   .then((result) => {
     User.findOne().then((user) => {
       if (!user) {
